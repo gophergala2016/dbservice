@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/xeipuuv/gojsonschema"
 	"strings"
@@ -49,7 +50,7 @@ func (self *Route) Sql(params map[string]interface{}) (string, error) {
 		return "", err
 	}
 	if response != "" {
-		return response, nil
+		return response, errors.New("schema validation failed")
 	}
 	if !self.Custom {
 		out.Write([]byte("with response_table as ("))

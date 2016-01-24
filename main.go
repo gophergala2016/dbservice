@@ -45,11 +45,35 @@ func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.P
 		}
 		params, err := getRequestParams(r, urlParams)
 		sql, err := route.Sql(params)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+		if err != nil && sql != "" {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, sql)
 			return
 		}
-		fmt.Fprint(w, sql)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println(err)
+			return
+		}
+		log.Println(sql)
+		rows, err := db.Query(sql)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Println(err)
+			return
+		}
+		defer rows.Close()
+		var jsonValue string
+		for rows.Next() {
+			err := rows.Scan(&jsonValue)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				log.Println(err)
+				return
+			}
+			fmt.Fprint(w, jsonValue)
+		}
+
 	}
 }
 
@@ -64,6 +88,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	router := httprouter.New()
 	for _, route := range routes {
 		if route.Method == "GET" {
