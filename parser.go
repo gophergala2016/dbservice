@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"github.com/BurntSushi/toml"
 	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
 	"strings"
@@ -91,4 +93,39 @@ func ParseSqlTemplate(path string, route *Route) error {
 	}
 	route.SqlTemplate = tmpl
 	return nil
+}
+
+type DbConfig struct {
+	User     string
+	Password string
+	Database string
+	Host     string
+	Port     int
+	SslMode  string
+}
+
+func ParseDbConfig(path string) (*DbConfig, error) {
+	conf := &DbConfig{}
+	content, err := ioutil.ReadFile(path + "/config.toml")
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Error while reading config.toml configuration: %v", err))
+	}
+	_, err = toml.Decode(string(content), &conf)
+	if err != nil {
+		return nil, err
+	}
+	if conf.User == "" {
+		conf.User = "postgres"
+	}
+	if conf.Host == "" {
+		conf.Host = "127.0.0.1"
+	}
+	if conf.Port == 0 {
+		conf.Port = 5432
+	}
+	if conf.SslMode == "" {
+		conf.SslMode = "disable"
+	}
+	return conf, nil
+
 }

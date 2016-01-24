@@ -1,7 +1,6 @@
-[database]
 user = "user"
 password = "password"
 database = "dbname"
 host = "127.0.0.1"
-port = "5434"
+port = 5434
 sslmode = "disable"
