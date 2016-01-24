@@ -10,9 +10,9 @@ const (
 	DB_USER     = "user"
 	DB_PASSWORD = "password"
 	DB_NAME     = "dbname"
-	DB_HOST     = "dbname"
+	DB_HOST     = "127.0.0.1"
 	DB_PORT     = "5432"
-	DB_SSLMODE  = "disabled"
+	DB_SSLMODE  = "disable"
 )
 
 func GetDbConnection() (*sql.DB, error) {
