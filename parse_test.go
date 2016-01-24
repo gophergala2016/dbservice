@@ -21,4 +21,10 @@ func TestParseRoutes(t *testing.T) {
 	if routes[0].Collection != true {
 		t.Errorf("Expected to get path collection to be true, but got false")
 	}
+	if routes[0].Schema != nil {
+		t.Errorf("Expected to get no route schema, but got")
+	}
+	if routes[1].Schema == nil {
+		t.Errorf("Expected to get route schema, but got nil")
+	}
 }

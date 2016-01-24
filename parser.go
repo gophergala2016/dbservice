@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
 	"strings"
 )
@@ -18,6 +19,10 @@ func ParseRoutes(path string) ([]*Route, error) {
 		line = bytes.TrimSpace(line)
 		if len(line) != 0 {
 			route, err := ParseRoute(line)
+			if err != nil {
+				return nil, err
+			}
+			err = ParseSchema(path, route)
 			if err != nil {
 				return nil, err
 			}
@@ -56,4 +61,17 @@ func ParseRoute(line []byte) (*Route, error) {
 		}
 	}
 	return route, nil
+}
+
+func ParseSchema(path string, route *Route) error {
+	content, err := ioutil.ReadFile(path + "/schemas/" + route.Name + ".schema")
+	if err != nil {
+		return nil
+	}
+	schema, err := gojsonschema.NewSchema(gojsonschema.NewStringLoader(string(content)))
+	if err != nil {
+		return err
+	}
+	route.Schema = schema
+	return nil
 }
