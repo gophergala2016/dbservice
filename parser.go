@@ -26,6 +26,10 @@ func ParseRoutes(path string) ([]*Route, error) {
 			if err != nil {
 				return nil, err
 			}
+			err = ParseSqlTemplate(path, route)
+			if err != nil {
+				return nil, err
+			}
 			routes = append(routes, route)
 		}
 	}
@@ -73,5 +77,18 @@ func ParseSchema(path string, route *Route) error {
 		return err
 	}
 	route.Schema = schema
+	return nil
+}
+
+func ParseSqlTemplate(path string, route *Route) error {
+	content, err := ioutil.ReadFile(path + "/sql/" + route.Name + ".sql")
+	if err != nil {
+		return fmt.Errorf("%v path is missing sql template", route.Name)
+	}
+	tmpl, err := makeTemplate(string(content))
+	if err != nil {
+		return err
+	}
+	route.SqlTemplate = tmpl
 	return nil
 }
