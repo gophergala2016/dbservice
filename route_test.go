@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/xeipuuv/gojsonschema"
 	"testing"
 )
@@ -39,5 +38,8 @@ func TestRouteSql(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected not to get error, but got: %v", err)
 	}
-	fmt.Println(sql)
+	expected := "select row_to_json(t) as value from (select * from users where id=23) t"
+	if sql != expected {
+		t.Errorf("Expected sql:\n%v, but got:\n%v\n", expected, sql)
+	}
 }
