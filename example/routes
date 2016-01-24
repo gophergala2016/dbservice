@@ -1,0 +1,5 @@
+get /products, name: 'get_products', collection: true
+get /products/:id, name: 'get_product'
+get /products/with_status/:status, name: 'get_products_by_status', collection: true
+post /product, name: 'create_product'
+put /products/:id, name: 'update_product'

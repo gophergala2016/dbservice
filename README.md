@@ -27,7 +27,7 @@ After all parameters are merge, they are validated with json schema (if json sch
 Sql generation
 --------------
 
-After request parameters are validated, they are used in sql template to generate sql request. Example of sql template:
+After request parameters are validated, they are used in sql template to generate sql request. Template should be in `sql/<route_name>.sql` file. Example of sql template:
 
 ```
 select * from products where id={{.id}}
@@ -52,6 +52,22 @@ insert into products (name, price) values ({{.name | quote}}, {{.price}}) return
 ```
 
 Sql generation is quite powerful and you can use all the power of `text/template` package.
+
+Database connection configuration
+---------------------------------
+
+Database connection configuration is in `config.toml` file. Example:
+
+```
+user = "postgres"
+password = "secret123"
+database = "dbservice_example"
+host = "127.0.0.1"
+port = 5434
+sslmode = "disable"
+```
+
+User, host, port and sslmode are optional. Defaults are '127.0.0.1', 5432 and 'disbale'.
 
 Response
 --------

@@ -1,0 +1,6 @@
+user = "postgres"
+password = "secret123"
+database = "dbservice_example"
+host = "127.0.0.1"
+port = 5434
+sslmode = "disable"
