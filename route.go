@@ -20,6 +20,9 @@ type Route struct {
 }
 
 func (self *Route) validate(params map[string]interface{}) (string, error) {
+	if self.Schema == nil {
+		return "", nil
+	}
 	documentLoader := gojsonschema.NewGoLoader(params)
 	result, err := self.Schema.Validate(documentLoader)
 	if err != nil {
