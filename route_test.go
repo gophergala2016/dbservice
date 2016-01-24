@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/xeipuuv/gojsonschema"
 	"testing"
-	"text/template"
 )
 
 func TestRouteSql(t *testing.T) {
@@ -26,7 +25,7 @@ func TestRouteSql(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected not to get error, but got: %v", err)
 	}
-	tmpl, err := template.New("").Parse(`select * from users where id={{.id}}`)
+	tmpl, err := makeTemplate(`select * from users where id={{.id}}`)
 	if err != nil {
 		t.Errorf("Expected not to get error, but got: %v", err)
 	}

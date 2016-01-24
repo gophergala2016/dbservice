@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/xeipuuv/gojsonschema"
+	"strings"
 	"text/template"
 )
 
@@ -17,7 +19,7 @@ type Route struct {
 	SqlTemplate *template.Template
 }
 
-func (self *Route) Validate(params map[string]interface{}) (string, error) {
+func (self *Route) validate(params map[string]interface{}) (string, error) {
 	documentLoader := gojsonschema.NewGoLoader(params)
 	result, err := self.Schema.Validate(documentLoader)
 	if err != nil {
@@ -39,7 +41,7 @@ func (self *Route) Validate(params map[string]interface{}) (string, error) {
 
 func (self *Route) Sql(params map[string]interface{}) (string, error) {
 	var out bytes.Buffer
-	response, err := self.Validate(params)
+	response, err := self.validate(params)
 	if err != nil {
 		return "", err
 	}
@@ -62,4 +64,18 @@ func (self *Route) Sql(params map[string]interface{}) (string, error) {
 	}
 	out.Write([]byte(") t"))
 	return out.String(), nil
+}
+
+func quoteString(value interface{}) string {
+	stringValue := fmt.Sprintf("%v", value)
+	stringValue = strings.Replace(stringValue, "'", "''", -1)
+	return "'" + stringValue + "'"
+}
+
+func makeTemplate(t string) (*template.Template, error) {
+	funcMap := template.FuncMap{
+		"quote": quoteString,
+	}
+	return template.New("").Funcs(funcMap).Parse(t)
+
 }
