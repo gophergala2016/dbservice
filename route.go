@@ -52,11 +52,7 @@ func (self *Route) Sql(params map[string]interface{}) (string, error) {
 		return response, nil
 	}
 	if !self.Custom {
-		if self.Collection {
-			out.Write([]byte("select array_to_json(array_agg(row_to_json(t))) as value from ("))
-		} else {
-			out.Write([]byte("select row_to_json(t) as value from ("))
-		}
+		out.Write([]byte("with response_table as ("))
 	}
 	err = self.SqlTemplate.Execute(&out, params)
 	if err != nil {
@@ -65,7 +61,11 @@ func (self *Route) Sql(params map[string]interface{}) (string, error) {
 	if self.Custom {
 		return out.String(), nil
 	}
-	out.Write([]byte(") t"))
+	if self.Collection {
+		out.Write([]byte(") select array_to_json(array_agg(row_to_json(t))) as value from (select * from response_table) t"))
+	} else {
+		out.Write([]byte(") select row_to_json(t) as value from (select * from response_table) t"))
+	}
 	return out.String(), nil
 }
 

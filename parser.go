@@ -85,7 +85,7 @@ func ParseSqlTemplate(path string, route *Route) error {
 	if err != nil {
 		return fmt.Errorf("%v path is missing sql template", route.Name)
 	}
-	tmpl, err := makeTemplate(string(content))
+	tmpl, err := makeTemplate(string(bytes.TrimSpace(content)))
 	if err != nil {
 		return err
 	}

@@ -38,7 +38,7 @@ func TestRouteSql(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected not to get error, but got: %v", err)
 	}
-	expected := "select row_to_json(t) as value from (select * from users where id=23) t"
+	expected := "with response_table as (select * from users where id=23) select row_to_json(t) as value from (select * from response_table) t"
 	if sql != expected {
 		t.Errorf("Expected sql:\n%v, but got:\n%v\n", expected, sql)
 	}

@@ -1,1 +1,1 @@
-update users set name={{.name | quote}}, email={{.email | quote}} where id={{.id}}
+update users set name={{.name | quote}}, email={{.email | quote}} where id={{.id}} returning *
