@@ -1,15 +1,48 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 )
 
+func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[string]interface{}, error) {
+	params := make(map[string]interface{})
+	err := r.ParseForm()
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range r.Form {
+		if len(v) >= 1 {
+			params[k] = v[0]
+		}
+	}
+	if r.Header.Get("Content-Type") == "application/json" {
+		decoder := json.NewDecoder(r.Body)
+		requestBodyMap := make(map[string]interface{})
+		err = decoder.Decode(&requestBodyMap)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range requestBodyMap {
+			params[k] = v
+		}
+	}
+	for k, v := range urlParams {
+		params[k] = v
+	}
+	return params, nil
+}
+
 func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		params := make(map[string]interface{})
+		urlParams := make(map[string]interface{})
+		for _, urlParam := range ps {
+			urlParams[urlParam.Key] = urlParam.Value
+		}
+		params, err := getRequestParams(r, urlParams)
 		sql, err := route.Sql(params)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
