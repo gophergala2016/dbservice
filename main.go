@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
@@ -52,8 +53,14 @@ func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.P
 	}
 }
 
+var db *sql.DB
+
 func main() {
 	routes, err := ParseRoutes(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	db, err = GetDbConnection()
 	if err != nil {
 		log.Fatal(err)
 	}
