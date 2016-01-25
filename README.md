@@ -79,6 +79,13 @@ Possible improvements
 
 Right now one of the biggest shortcomings of this project is that there is no ability to handle authentication and user sessions. That might come in future if project will turn out to be useful for people.
 
+Install
+=======
+
+```
+go get github.com/gophergala2016/dbservice
+```
+
 Usage
 =====
 
@@ -98,6 +105,12 @@ To start `dbservice` server, just launch `dbservice` executable when you are in 
     ├── get_product.sql
     ├── get_products.sql
     └── update_product.sql
+```
+
+By default web server will be running on port `8080`. To customize port, just specify it as command line argument:
+
+```
+dbservice 3000
 ```
 
 You can try `example` project that is located in [example folder](https://github.com/gophergala2016/dbservice/tree/master/example). It has README.

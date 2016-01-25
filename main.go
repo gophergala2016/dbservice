@@ -7,6 +7,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+	"os"
 )
 
 func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[string]interface{}, error) {
@@ -107,5 +108,9 @@ func main() {
 			router.DELETE(route.Path, handler(route))
 		}
 	}
-	log.Fatal(http.ListenAndServe(":8080", router))
+	port := "8080"
+	if len(os.Args) > 1 {
+		port = os.Args[1]
+	}
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
