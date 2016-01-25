@@ -7,11 +7,11 @@ Database setup
 --------------
 Simplest way of setting up databaes is to use Docker:
 
-1. Start Postgrs on 5434 (in case you already have one running locally)
+* Start Postgrs on 5434 (in case you already have one running locally)
 ```
 sudo docker run -e POSTGRES_PASSWORD=secret123 -d --publish=5434:5432 postgres:9.5
 ```
-2. If you currently have psql tool (it goes with postgres), get into postgres console:
+* If you currently have psql tool (it goes with postgres), get into postgres console:
 ```
 PGPASSWORD=secret123 psql -U postgres -h 127.0.0.1 -p 5434
 ```
@@ -22,7 +22,7 @@ sudo docker exec -it <postgres container id> /bin/bash
 psql -U postgres
 ```
 
-3. Create database and table:
+* Create database and table:
 ```
 create database dbservice_example;
 \c dbservice_example

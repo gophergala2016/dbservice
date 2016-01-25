@@ -78,3 +78,26 @@ Possible improvements
 ---------------------
 
 Right now one of the biggest shortcomings of this project is that there is no ability to handle authentication and user sessions. That might come in future if project will turn out to be useful for people.
+
+Usage
+=====
+
+To start `dbservice` server, just launch `dbservice` executable when you are in your dbservice root folder. Example of files structure:
+
+```
+├── config.toml
+├── routes
+├── schemas
+│   ├── create_product.schema
+│   ├── get_products_by_status.schema
+│   ├── get_product.schema
+│   └── update_product.schema
+└── sql
+    ├── create_product.sql
+    ├── get_products_by_status.sql
+    ├── get_product.sql
+    ├── get_products.sql
+    └── update_product.sql
+```
+
+You can try `example` project that is located in [example folder](https://github.com/gophergala2016/dbservice/tree/master/example). It has README.
