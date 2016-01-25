@@ -1,0 +1,26 @@
+{
+  "title": "Update product",
+  "description": "Update product",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Product id",
+      "type": "string",
+      "pattern": "^\\d+$"
+    },
+    "name": {
+      "description": "Product name",
+      "type": "string",
+      "minLength": 1
+    },
+    "price": {
+      "description": "Product price",
+      "type": "integer"
+    },
+    "status": {
+      "description": "Product status",
+      "type": "string"
+    }    
+  },
+  "required": ["id", "name", "price"]
+}

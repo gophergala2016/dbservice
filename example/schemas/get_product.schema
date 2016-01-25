@@ -1,0 +1,13 @@
+{
+  "title": "Get product",
+  "description": "Get product",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Product id",
+      "type": "string",
+      "pattern": "^\\d+$"
+    }
+  },
+  "required": ["id"]
+}

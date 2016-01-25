@@ -67,8 +67,11 @@ func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.P
 		for rows.Next() {
 			err := rows.Scan(&jsonValue)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				log.Println(err)
+				if route.Collection {
+					fmt.Fprint(w, "[]")
+				} else {
+					w.WriteHeader(http.StatusNotFound)
+				}
 				return
 			}
 			fmt.Fprint(w, jsonValue)

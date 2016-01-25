@@ -1,0 +1,21 @@
+{
+  "title": "Create product",
+  "description": "Create product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Product name",
+      "type": "string",
+      "minLength": 1
+    },
+    "price": {
+      "description": "Product price",
+      "type": "integer"
+    },
+    "status": {
+      "description": "Product status",
+      "type": "string"
+    }    
+  },
+  "required": ["name", "price"]
+}

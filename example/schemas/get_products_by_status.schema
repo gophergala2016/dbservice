@@ -1,0 +1,13 @@
+{
+  "title": "Get products by status",
+  "description": "Get products by status",
+  "type": "object",
+  "properties": {
+    "status": {
+      "description": "Product status",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": ["status"]
+}
