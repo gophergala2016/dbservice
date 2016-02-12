@@ -30,4 +30,10 @@ func TestParseRoutes(t *testing.T) {
 	if api.Version != 5 {
 		t.Errorf("Expected to get api version 5, but got %v", api.Version)
 	}
+	if api.MinVersion != 3 {
+		t.Errorf("Expected to get api version 3, but got %v", api.MinVersion)
+	}
+	if len(api.DeprecatedVersions) != 3 {
+		t.Errorf("Expected to get 3 deprecated versions, but got %v", len(api.DeprecatedVersions))
+	}
 }

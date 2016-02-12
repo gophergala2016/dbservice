@@ -3,5 +3,5 @@ post /users, name: 'create_user'
 put /users/:id, name: 'update_user'
 
 api_version: 5
-deprecated_api_version: [3-4]
+deprecated_api_version: [1,3-4]
 min_api_version: 3

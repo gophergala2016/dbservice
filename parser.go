@@ -54,8 +54,53 @@ func ParseApiSettings(api *Api, line []byte) (bool, error) {
 		}
 		return true, nil
 	} else if bytes.HasPrefix(line, []byte("deprecated_api_version")) {
+		line = bytes.TrimPrefix(line, []byte("deprecated_api_version:"))
+		line = bytes.TrimSpace(line)
+		line = bytes.TrimPrefix(line, []byte("["))
+		line = bytes.TrimSuffix(line, []byte("]"))
+		chunks := bytes.Split(line, []byte(","))
+		versions := make([]int, 0, 0)
+		for _, chunk := range chunks {
+			if bytes.Contains(chunk, []byte("-")) {
+				rng := bytes.Split(chunk, []byte("-"))
+				if len(rng) != 2 {
+					return false, fmt.Errorf("Expected to get deprecated api version range, but got: %v", chunk)
+				}
+				from, err := strconv.Atoi(string(rng[0]))
+				if err != nil {
+					return false, err
+				}
+				to, err := strconv.Atoi(string(rng[1]))
+				if err != nil {
+					return false, err
+				}
+				if from > to {
+					return false, fmt.Errorf("Got invalid deprecated api version range: %v", chunk)
+				}
+				if from == to {
+					versions = append(versions, from)
+				} else {
+					for version := from; version <= to; version++ {
+						versions = append(versions, version)
+					}
+				}
+			} else {
+				version, err := strconv.Atoi(string(chunk))
+				if err != nil {
+					return false, err
+				}
+				versions = append(versions, version)
+			}
+			api.DeprecatedVersions = versions
+		}
 		return true, nil
 	} else if bytes.HasPrefix(line, []byte("min_api_version")) {
+		line = bytes.TrimPrefix(line, []byte("min_api_version:"))
+		line = bytes.TrimSpace(line)
+		api.MinVersion, err = strconv.Atoi(string(line))
+		if err != nil {
+			return false, err
+		}
 		return true, nil
 	}
 	return false, nil
