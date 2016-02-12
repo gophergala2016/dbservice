@@ -36,4 +36,7 @@ func TestParseRoutes(t *testing.T) {
 	if len(api.DeprecatedVersions) != 3 {
 		t.Errorf("Expected to get 3 deprecated versions, but got %v", len(api.DeprecatedVersions))
 	}
+	if api.Routes[0].Versions[4] == nil {
+		t.Error("Expected to get version 4 of get_users route, but got nil")
+	}
 }

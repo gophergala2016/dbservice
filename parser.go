@@ -7,6 +7,9 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -153,19 +156,52 @@ func ParseSchema(path string, route *Route) error {
 	return nil
 }
 
+var versionRegexp = regexp.MustCompile(".v([0-9]*).sql$")
+
 func ParseSqlTemplate(path string, route *Route) error {
-	content, err := ioutil.ReadFile(path + "/sql/" + route.Name + ".sql")
+	files, err := filepath.Glob(path + "/sql/" + route.Name + ".v[0-9]*.sql")
 	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		match := versionRegexp.FindAllStringSubmatch(file, -1)
+		versionString := match[0][1]
+		version, err := strconv.Atoi(versionString)
+		if err != nil {
+			return err
+		}
+		err = ParseSqlTemplateVersion(route, file, version)
+		if err != nil {
+			return err
+		}
+	}
+	defaultPath := path + "/sql/" + route.Name + ".sql"
+	if _, err := os.Stat(defaultPath); err == nil {
+		files = append(files, defaultPath)
+		err = ParseSqlTemplateVersion(route, defaultPath, 0)
+		if err != nil {
+			return err
+		}
+	}
+	if len(files) == 0 {
 		return fmt.Errorf("%v path is missing sql template", route.Name)
+	}
+	return nil
+}
+
+func ParseSqlTemplateVersion(route *Route, path string, version int) error {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("missing sql template", path)
 	}
 	tmpl, err := makeTemplate(string(bytes.TrimSpace(content)))
 	if err != nil {
 		return err
 	}
-	if route.Versions[0] == nil {
-		route.Versions[0] = &RouteVersion{Version: 0}
+	if route.Versions[version] == nil {
+		route.Versions[version] = &RouteVersion{Version: version}
 	}
-	route.Versions[0].SqlTemplate = tmpl
+	route.Versions[version].SqlTemplate = tmpl
 	return nil
 }
 
