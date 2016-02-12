@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[string]interface{}, error) {
@@ -38,14 +39,15 @@ func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[st
 	return params, nil
 }
 
-func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		var err error
 		urlParams := make(map[string]interface{})
 		for _, urlParam := range ps {
 			urlParams[urlParam.Key] = urlParam.Value
 		}
 		params, err := getRequestParams(r, urlParams)
-		sql, err := route.Sql(params, 0)
+		sql, err := route.Sql(params, version)
 		if err != nil && sql != "" {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, sql)
@@ -96,16 +98,36 @@ func main() {
 	router := httprouter.New()
 	for _, route := range api.Routes {
 		if route.Method == "GET" {
-			router.GET(route.Path, handler(route))
+			router.GET(route.Path, handler(api, route, 0))
+			if api.Version > 0 {
+				for i := api.MinVersion; i < api.Version; i++ {
+					router.GET("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
+				}
+			}
 		}
 		if route.Method == "POST" {
-			router.POST(route.Path, handler(route))
+			router.POST(route.Path, handler(api, route, 0))
+			if api.Version > 0 {
+				for i := api.MinVersion; i < api.Version; i++ {
+					router.POST("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
+				}
+			}
 		}
 		if route.Method == "PUT" {
-			router.PUT(route.Path, handler(route))
+			router.PUT(route.Path, handler(api, route, 0))
+			if api.Version > 0 {
+				for i := api.MinVersion; i < api.Version; i++ {
+					router.PUT("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
+				}
+			}
 		}
 		if route.Method == "DELETE" {
-			router.DELETE(route.Path, handler(route))
+			router.DELETE(route.Path, handler(api, route, 0))
+			if api.Version > 0 {
+				for i := api.MinVersion; i < api.Version; i++ {
+					router.DELETE("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
+				}
+			}
 		}
 	}
 	port := "8080"

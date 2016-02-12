@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xeipuuv/gojsonschema"
+	"sort"
 	"strings"
 	"text/template"
 )
@@ -53,6 +54,7 @@ func (self *Route) validate(params map[string]interface{}, version int) (string,
 }
 
 func (self *Route) Sql(params map[string]interface{}, version int) (string, error) {
+	version = self.GetAvailableVersion(version)
 	route := self.Versions[version]
 	if route == nil {
 		return "", fmt.Errorf("Route version %v missing from %v route", version, self.Name)
@@ -81,6 +83,28 @@ func (self *Route) Sql(params map[string]interface{}, version int) (string, erro
 		out.Write([]byte(") select row_to_json(t) as value from (select * from response_table) t"))
 	}
 	return out.String(), nil
+}
+
+func (self *Route) GetAvailableVersion(version int) int {
+	if self.Versions[version] != nil {
+		return version
+	}
+	versions := make([]int, 0, len(self.Versions))
+	for version := range self.Versions {
+		if version != 0 {
+			versions = append(versions, version)
+		}
+	}
+	sort.Ints(versions)
+	for i := 0; i < len(versions); i++ {
+		if versions[i] > version {
+			return versions[i]
+		}
+	}
+	if self.Versions[0] != nil {
+		return 0
+	}
+	return version
 }
 
 func quoteString(value interface{}) string {
