@@ -41,6 +41,9 @@ func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[st
 
 func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		if version == 0 {
+			version = api.Version
+		}
 		var err error
 		urlParams := make(map[string]interface{})
 		for _, urlParam := range ps {
@@ -67,6 +70,10 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 		}
 		defer rows.Close()
 		var jsonValue string
+		w.Header().Set("X-Api-Version", strconv.Itoa(version))
+		if api.IsDeprecated(version) {
+			w.Header().Set("X-Api-Deprecated", "true")
+		}
 		for rows.Next() {
 			err := rows.Scan(&jsonValue)
 			if err != nil {
@@ -100,7 +107,7 @@ func main() {
 		if route.Method == "GET" {
 			router.GET(route.Path, handler(api, route, 0))
 			if api.Version > 0 {
-				for i := api.MinVersion; i < api.Version; i++ {
+				for i := api.MinVersion; i <= api.Version; i++ {
 					router.GET("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
 				}
 			}
@@ -108,7 +115,7 @@ func main() {
 		if route.Method == "POST" {
 			router.POST(route.Path, handler(api, route, 0))
 			if api.Version > 0 {
-				for i := api.MinVersion; i < api.Version; i++ {
+				for i := api.MinVersion; i <= api.Version; i++ {
 					router.POST("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
 				}
 			}
@@ -116,7 +123,7 @@ func main() {
 		if route.Method == "PUT" {
 			router.PUT(route.Path, handler(api, route, 0))
 			if api.Version > 0 {
-				for i := api.MinVersion; i < api.Version; i++ {
+				for i := api.MinVersion; i <= api.Version; i++ {
 					router.PUT("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
 				}
 			}
@@ -124,7 +131,7 @@ func main() {
 		if route.Method == "DELETE" {
 			router.DELETE(route.Path, handler(api, route, 0))
 			if api.Version > 0 {
-				for i := api.MinVersion; i < api.Version; i++ {
+				for i := api.MinVersion; i <= api.Version; i++ {
 					router.DELETE("/v"+strconv.Itoa(i)+route.Path, handler(api, route, i))
 				}
 			}
