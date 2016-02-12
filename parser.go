@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -40,6 +41,7 @@ func ParseRoutes(path string) (*Api, error) {
 			if err != nil {
 				return nil, err
 			}
+			PropagateSchemas(route)
 			api.Routes = append(api.Routes, route)
 		}
 	}
@@ -231,6 +233,27 @@ func ParseSqlTemplateVersion(route *Route, path string, version int) error {
 	}
 	route.Versions[version].SqlTemplate = tmpl
 	return nil
+}
+
+func PropagateSchemas(route *Route) {
+	versions := make([]int, 0, len(route.Versions))
+	for version := range route.Versions {
+		if version != 0 {
+			versions = append(versions, version)
+		}
+	}
+	sort.Ints(versions)
+	var schema *gojsonschema.Schema
+	if route.Versions[0] != nil {
+		schema = route.Versions[0].Schema
+	}
+	for i := len(versions) - 1; i >= 0; i-- {
+		if route.Versions[versions[i]].Schema == nil {
+			route.Versions[versions[i]].Schema = schema
+		} else {
+			schema = route.Versions[versions[i]].Schema
+		}
+	}
 }
 
 type DbConfig struct {
