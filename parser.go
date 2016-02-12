@@ -141,22 +141,50 @@ func ParseRoute(line []byte) (*Route, error) {
 }
 
 func ParseSchema(path string, route *Route) error {
-	content, err := ioutil.ReadFile(path + "/schemas/" + route.Name + ".schema")
+	files, err := filepath.Glob(path + "/schemas/" + route.Name + ".v[0-9]*.schema")
 	if err != nil {
 		return nil
+	}
+	for _, file := range files {
+		match := versionRegexp.FindAllStringSubmatch(file, -1)
+		versionString := match[0][1]
+		version, err := strconv.Atoi(versionString)
+		if err != nil {
+			return err
+		}
+		err = ParseSchemaVersion(route, file, version)
+		if err != nil {
+			return err
+		}
+	}
+	defaultPath := path + "/schemas/" + route.Name + ".schema"
+	if _, err := os.Stat(defaultPath); err == nil {
+		files = append(files, defaultPath)
+		err = ParseSchemaVersion(route, defaultPath, 0)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ParseSchemaVersion(route *Route, path string, version int) error {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
 	}
 	schema, err := gojsonschema.NewSchema(gojsonschema.NewStringLoader(string(content)))
 	if err != nil {
 		return err
 	}
-	if route.Versions[0] == nil {
-		route.Versions[0] = &RouteVersion{Version: 0}
+	if route.Versions[version] == nil {
+		route.Versions[version] = &RouteVersion{Version: version}
 	}
-	route.Versions[0].Schema = schema
+	route.Versions[version].Schema = schema
 	return nil
 }
 
-var versionRegexp = regexp.MustCompile(".v([0-9]*).sql$")
+var versionRegexp = regexp.MustCompile(".v([0-9]*).(sql|schema)$")
 
 func ParseSqlTemplate(path string, route *Route) error {
 	files, err := filepath.Glob(path + "/sql/" + route.Name + ".v[0-9]*.sql")

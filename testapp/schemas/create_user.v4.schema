@@ -1,0 +1,12 @@
+{
+  "title": "Create user",
+  "description": "Create user",
+  "type": "object",
+  "properties": {
+    "email": {
+      "description": "User email",
+      "type": "string"
+    }
+  },
+  "required": ["email"]
+}

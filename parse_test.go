@@ -39,4 +39,7 @@ func TestParseRoutes(t *testing.T) {
 	if api.Routes[0].Versions[4] == nil {
 		t.Error("Expected to get version 4 of get_users route, but got nil")
 	}
+	if api.Routes[1].Versions[4] == nil || api.Routes[1].Versions[4].Schema == nil {
+		t.Errorf("Expected to get create_user route v4 schema, but got nil")
+	}
 }
