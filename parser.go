@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func ParseRoutes(path string) ([]*Route, error) {
+func ParseRoutes(path string) (*Api, error) {
 	content, err := ioutil.ReadFile(path + "/routes")
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func ParseRoutes(path string) ([]*Route, error) {
 			routes = append(routes, route)
 		}
 	}
-	return routes, nil
+	return &Api{Routes: routes}, nil
 }
 
 func ParseRoute(line []byte) (*Route, error) {

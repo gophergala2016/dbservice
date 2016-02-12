@@ -84,7 +84,7 @@ func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.P
 var db *sql.DB
 
 func main() {
-	routes, err := ParseRoutes(".")
+	api, err := ParseRoutes(".")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func main() {
 	}
 	defer db.Close()
 	router := httprouter.New()
-	for _, route := range routes {
+	for _, route := range api.Routes {
 		if route.Method == "GET" {
 			router.GET(route.Path, handler(route))
 		}
