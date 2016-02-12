@@ -11,13 +11,12 @@ import (
 )
 
 type Route struct {
-	Name        string
-	Method      string
-	Path        string
-	Collection  bool
-	Custom      bool
-	Schema      *gojsonschema.Schema
-	SqlTemplate *template.Template
+	Name       string
+	Method     string
+	Path       string
+	Collection bool
+	Custom     bool
+	Versions   map[int]*RouteVersion
 }
 
 type RouteVersion struct {
@@ -27,11 +26,15 @@ type RouteVersion struct {
 }
 
 func (self *Route) validate(params map[string]interface{}, version int) (string, error) {
-	if self.Schema == nil {
+	route := self.Versions[version]
+	if route == nil {
+		return "", fmt.Errorf("Route version %v missing from %v route", version, self.Name)
+	}
+	if route.Schema == nil {
 		return "", nil
 	}
 	documentLoader := gojsonschema.NewGoLoader(params)
-	result, err := self.Schema.Validate(documentLoader)
+	result, err := route.Schema.Validate(documentLoader)
 	if err != nil {
 		return "", err
 	}
@@ -50,6 +53,10 @@ func (self *Route) validate(params map[string]interface{}, version int) (string,
 }
 
 func (self *Route) Sql(params map[string]interface{}, version int) (string, error) {
+	route := self.Versions[version]
+	if route == nil {
+		return "", fmt.Errorf("Route version %v missing from %v route", version, self.Name)
+	}
 	var out bytes.Buffer
 	response, err := self.validate(params, version)
 	if err != nil {
@@ -61,7 +68,7 @@ func (self *Route) Sql(params map[string]interface{}, version int) (string, erro
 	if !self.Custom {
 		out.Write([]byte("with response_table as ("))
 	}
-	err = self.SqlTemplate.Execute(&out, params)
+	err = route.SqlTemplate.Execute(&out, params)
 	if err != nil {
 		return "", err
 	}

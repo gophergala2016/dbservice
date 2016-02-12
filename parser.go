@@ -107,7 +107,7 @@ func ParseApiSettings(api *Api, line []byte) (bool, error) {
 }
 
 func ParseRoute(line []byte) (*Route, error) {
-	route := &Route{}
+	route := &Route{Versions: make(map[int]*RouteVersion)}
 	chunks := bytes.Split(line, []byte(","))
 	urlParams := bytes.Split(chunks[0], []byte(" "))
 	route.Method = strings.ToUpper(string(urlParams[0]))
@@ -146,7 +146,10 @@ func ParseSchema(path string, route *Route) error {
 	if err != nil {
 		return err
 	}
-	route.Schema = schema
+	if route.Versions[0] == nil {
+		route.Versions[0] = &RouteVersion{Version: 0}
+	}
+	route.Versions[0].Schema = schema
 	return nil
 }
 
@@ -159,7 +162,10 @@ func ParseSqlTemplate(path string, route *Route) error {
 	if err != nil {
 		return err
 	}
-	route.SqlTemplate = tmpl
+	if route.Versions[0] == nil {
+		route.Versions[0] = &RouteVersion{Version: 0}
+	}
+	route.Versions[0].SqlTemplate = tmpl
 	return nil
 }
 

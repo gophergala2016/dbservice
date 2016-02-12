@@ -21,10 +21,10 @@ func TestParseRoutes(t *testing.T) {
 	if api.Routes[0].Collection != true {
 		t.Errorf("Expected to get path collection to be true, but got false")
 	}
-	if api.Routes[0].Schema != nil {
+	if api.Routes[0].Versions[0].Schema != nil {
 		t.Errorf("Expected to get no route schema, but got")
 	}
-	if api.Routes[1].Schema == nil {
+	if api.Routes[1].Versions[0].Schema == nil {
 		t.Errorf("Expected to get route schema, but got nil")
 	}
 	if api.Version != 5 {

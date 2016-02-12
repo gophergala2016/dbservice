@@ -29,8 +29,13 @@ func TestRouteSql(t *testing.T) {
 		t.Errorf("Expected not to get error, but got: %v", err)
 	}
 	route := &Route{
-		SqlTemplate: tmpl,
-		Schema:      schema,
+		Versions: map[int]*RouteVersion{
+			0: {
+				Version:     0,
+				SqlTemplate: tmpl,
+				Schema:      schema,
+			},
+		},
 	}
 	params := make(map[string]interface{})
 	params["id"] = 23
