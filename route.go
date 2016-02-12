@@ -20,7 +20,13 @@ type Route struct {
 	SqlTemplate *template.Template
 }
 
-func (self *Route) validate(params map[string]interface{}) (string, error) {
+type RouteVersion struct {
+	Version     int
+	Schema      *gojsonschema.Schema
+	SqlTemplate *template.Template
+}
+
+func (self *Route) validate(params map[string]interface{}, version int) (string, error) {
 	if self.Schema == nil {
 		return "", nil
 	}
@@ -43,9 +49,9 @@ func (self *Route) validate(params map[string]interface{}) (string, error) {
 	return "", nil
 }
 
-func (self *Route) Sql(params map[string]interface{}) (string, error) {
+func (self *Route) Sql(params map[string]interface{}, version int) (string, error) {
 	var out bytes.Buffer
-	response, err := self.validate(params)
+	response, err := self.validate(params, version)
 	if err != nil {
 		return "", err
 	}

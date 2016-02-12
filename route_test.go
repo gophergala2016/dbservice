@@ -34,7 +34,7 @@ func TestRouteSql(t *testing.T) {
 	}
 	params := make(map[string]interface{})
 	params["id"] = 23
-	sql, err := route.Sql(params)
+	sql, err := route.Sql(params, 0)
 	if err != nil {
 		t.Errorf("Expected not to get error, but got: %v", err)
 	}

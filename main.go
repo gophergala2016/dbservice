@@ -45,7 +45,7 @@ func handler(route *Route) func(http.ResponseWriter, *http.Request, httprouter.P
 			urlParams[urlParam.Key] = urlParam.Value
 		}
 		params, err := getRequestParams(r, urlParams)
-		sql, err := route.Sql(params)
+		sql, err := route.Sql(params, 0)
 		if err != nil && sql != "" {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, sql)
