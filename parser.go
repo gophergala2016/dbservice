@@ -15,11 +15,15 @@ func ParseRoutes(path string) (*Api, error) {
 	if err != nil {
 		return nil, err
 	}
-	routes := make([]*Route, 0, 0)
+	api := &Api{Routes: make([]*Route, 0, 0)}
 	lines := bytes.Split(content, []byte("\n"))
 	for _, line := range lines {
 		line = bytes.TrimSpace(line)
 		if len(line) != 0 {
+			ok, err := ParseApiSettings(api, line)
+			if ok {
+				continue
+			}
 			route, err := ParseRoute(line)
 			if err != nil {
 				return nil, err
@@ -32,10 +36,21 @@ func ParseRoutes(path string) (*Api, error) {
 			if err != nil {
 				return nil, err
 			}
-			routes = append(routes, route)
+			api.Routes = append(api.Routes, route)
 		}
 	}
-	return &Api{Routes: routes}, nil
+	return api, nil
+}
+
+func ParseApiSettings(api *Api, line []byte) (bool, error) {
+	if bytes.HasPrefix(line, []byte("api_version")) {
+		return true, nil
+	} else if bytes.HasPrefix(line, []byte("deprecated_api_version")) {
+		return true, nil
+	} else if bytes.HasPrefix(line, []byte("min_api_version")) {
+		return true, nil
+	}
+	return false, nil
 }
 
 func ParseRoute(line []byte) (*Route, error) {
