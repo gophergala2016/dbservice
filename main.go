@@ -41,16 +41,26 @@ func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[st
 
 func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		if version == 0 {
-			version = api.Version
-		}
 		var err error
+		apiVersion := version
+		headerVersion := r.Header.Get("api-version")
+		if version == 0 && headerVersion != "" {
+			apiVersion, err = strconv.Atoi(headerVersion)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				log.Println("Unknown api version: %v", r.Header.Get("api-version"))
+				return
+			}
+		}
+		if apiVersion == 0 {
+			apiVersion = api.Version
+		}
 		urlParams := make(map[string]interface{})
 		for _, urlParam := range ps {
 			urlParams[urlParam.Key] = urlParam.Value
 		}
 		params, err := getRequestParams(r, urlParams)
-		sql, err := route.Sql(params, version)
+		sql, err := route.Sql(params, apiVersion)
 		if err != nil && sql != "" {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, sql)
@@ -70,8 +80,8 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 		}
 		defer rows.Close()
 		var jsonValue string
-		w.Header().Set("X-Api-Version", strconv.Itoa(version))
-		if api.IsDeprecated(version) {
+		w.Header().Set("X-Api-Version", strconv.Itoa(apiVersion))
+		if api.IsDeprecated(apiVersion) {
 			w.Header().Set("X-Api-Deprecated", "true")
 		}
 		for rows.Next() {
