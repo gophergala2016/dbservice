@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/xeipuuv/gojsonschema"
 	"io/ioutil"
+	"strconv"
 	"strings"
 )
 
@@ -43,7 +44,14 @@ func ParseRoutes(path string) (*Api, error) {
 }
 
 func ParseApiSettings(api *Api, line []byte) (bool, error) {
+	var err error
 	if bytes.HasPrefix(line, []byte("api_version")) {
+		line = bytes.TrimPrefix(line, []byte("api_version:"))
+		line = bytes.TrimSpace(line)
+		api.Version, err = strconv.Atoi(string(line))
+		if err != nil {
+			return false, err
+		}
 		return true, nil
 	} else if bytes.HasPrefix(line, []byte("deprecated_api_version")) {
 		return true, nil

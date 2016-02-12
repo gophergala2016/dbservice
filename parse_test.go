@@ -27,4 +27,7 @@ func TestParseRoutes(t *testing.T) {
 	if api.Routes[1].Schema == nil {
 		t.Errorf("Expected to get route schema, but got nil")
 	}
+	if api.Version != 5 {
+		t.Errorf("Expected to get api version 5, but got %v", api.Version)
+	}
 }
