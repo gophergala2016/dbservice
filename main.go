@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 )
 
@@ -39,17 +40,29 @@ func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[st
 	return params, nil
 }
 
+var apiVersionRegexp = regexp.MustCompile(".v([0-9]*)\\+json$")
+
 func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		var err error
 		apiVersion := version
 		headerVersion := r.Header.Get("api-version")
-		if version == 0 && headerVersion != "" {
+		if apiVersion == 0 && headerVersion != "" {
 			apiVersion, err = strconv.Atoi(headerVersion)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				log.Println("Unknown api version: %v", r.Header.Get("api-version"))
 				return
+			}
+		}
+		if apiVersion == 0 && r.Header.Get("Accept") != "" {
+			matches := apiVersionRegexp.FindAllStringSubmatch(r.Header.Get("Accept"), -1)
+			if len(matches) > 0 && len(matches[0]) > 1 {
+				apiVersion, err = strconv.Atoi(matches[0][1])
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					log.Println("Unknown api version: %v", matches[0][1])
+				}
 			}
 		}
 		if apiVersion == 0 {
