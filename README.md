@@ -74,6 +74,25 @@ Response
 
 After sql query is executed, resulting data is serialized as json array or object (that depends if route is for collection or not). And then it's returned back to user.
 
+Versioning
+==========
+
+If you want to introduce versioning to your api, you need to can couple of parameters to your routes file. All of them are optional. Example:
+
+```
+api_version: 10
+deprecated_api_version: [1-2, 4, 6-9]
+min_api_version: 1
+```
+
+`api_version` - allows to specify current api version
+
+`deprecated_api_version` - here you can specify which api versions will get additional deprecated header in response. `X-Api-Deprecated: true`. You can specify both individual values and ranges.
+
+`min_api_version` - specifies minimal api version. Versions before that will return an error and won't be served.
+
+By default all api versions will be served by the same sql template. But if you want to customize sql template for a particular version, you can do that by adding `.v{version_number}.sql` extension. Let's say you want to customize `get_product.sql` templat for version 2. In this case you would have another file with `get_product.v2.sql` name. And it would only be used for version 2 and all the versions below (unless one of this versions have been customized by another file). Same thing about changing request schema for particular version. Just rename schema file in a similar fasion. `get_product.v2.schema` in our case. By default it will use `get_product.schema` if it exists or will just omit schema check if file has not been supplied.
+
 Possible improvements
 ---------------------
 
