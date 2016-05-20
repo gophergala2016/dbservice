@@ -133,3 +133,51 @@ dbservice 3000
 ```
 
 You can try `example` project that is located in [example folder](https://github.com/gophergala2016/dbservice/tree/master/example). It has README.
+
+Plugins
+=======
+
+Plugins can register and then add hook before request execution (possibly setting some data that will be accessible in sql templates). That is optional. Also plugins can modify response json as well as to add additional response headers/cookies.
+
+JWT plugin
+==========
+
+Configuration
+-------------
+
+Create `plugins/jwt.toml` configuration file. Example:
+
+```
+secret = "secret123"
+issuer = "issuer"
+expiration = "4h"
+rotation_deadline = "2h"
+```
+
+This will set secret for encoding token, issuer claim (optional), expiration time for token and rotation_deadline (optional). Rotation deadline states how close to expiration should it be for server to transparantly issue new token with updated expiration time.
+
+Routes
+------
+
+```
+post /login, name: 'login' | jwt
+```
+
+Once you put jwt.toml file into plugins folder, jwt plugin will be enabled for dbservice. If you add jwt plugin to one of the actions, then response json of plugin will need to contain `__jwt` key that will contain payload data. Example of login json response:
+
+```
+{"__jwt": {"user_id": 5, "admin": true}, "success": true}
+```
+
+Based on content of `__jwt` value, jwt token will be created (or not if it's not present). After this `__jwt` key will be removed from response. And in this case user wil get `{"success": true}` as response with additional header that has jwt token.
+
+Reading payload
+---------------
+
+If jwt plugin is enabled, you can use content from jwt payload in sql templates by using following syntax:
+
+```
+{{jwt.payload["<key name>"]}}
+```
+
+This will insert value from the payload into sql query.
