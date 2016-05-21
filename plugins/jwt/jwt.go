@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/gophergala2016/dbserver/plugins"
 	"io/ioutil"
 	"time"
 )
@@ -32,6 +33,10 @@ func (self *JWT) ParseConfig(path string) error {
 	}
 	_, err = toml.Decode(string(content), self)
 	return err
+}
+
+func (self *JWT) Process(data map[string]interface{}) *plugins.Response {
+	return nil
 }
 
 // app.Register(&JWT{}, "jwt") || app.Register("jwt", JWT)
