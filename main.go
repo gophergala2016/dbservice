@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/gophergala2016/dbserver/plugins/jwt"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -120,6 +121,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//Plugins
+	api.RegisterPlugin("jwt", &jwt.JWT{})
+	//Plugins
 	db, err = GetDbConnection()
 	if err != nil {
 		log.Fatal(err)
