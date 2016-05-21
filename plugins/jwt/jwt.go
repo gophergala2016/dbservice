@@ -1,18 +1,37 @@
 package jwt
 
 import (
+	"errors"
+	"fmt"
+	"github.com/BurntSushi/toml"
+	"io/ioutil"
 	"time"
 )
 
+type duration struct {
+	time.Duration
+}
+
+func (d *duration) UnmarshalText(text []byte) error {
+	var err error
+	d.Duration, err = time.ParseDuration(string(text))
+	return err
+}
+
 type JWT struct {
-	Secret           []byte
+	Secret           string
 	Issuer           string
-	ExpirationTime   time.Time
-	RotationDeadline time.Time
+	ExpirationTime   duration `toml:"expiration"`
+	RotationDeadline duration `toml:"rotation_deadline"`
 }
 
 func (self *JWT) ParseConfig(path string) error {
-	return nil
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error while reading plugin config: %v", err))
+	}
+	_, err = toml.Decode(string(content), self)
+	return err
 }
 
 // app.Register(&JWT{}, "jwt") || app.Register("jwt", JWT)
