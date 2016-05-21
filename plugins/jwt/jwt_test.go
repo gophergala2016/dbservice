@@ -24,3 +24,14 @@ func TestParseConfig(t *testing.T) {
 		t.Errorf("Expected 2 hour rotation deadline, but got: %v", jwtPlugin.RotationDeadline.Duration)
 	}
 }
+
+func TestParseMultilineSecret(t *testing.T) {
+	jwtPlugin := &JWT{}
+	err := jwtPlugin.ParseConfig("test_config/jwt_multiline.toml")
+	if err != nil {
+		t.Error(err)
+	}
+	if jwtPlugin.Secret == "" {
+		t.Errorf("Secret attribute was parsed incorrectly. Expected multiline, but got: '%v'", jwtPlugin.Secret)
+	}
+}
