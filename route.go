@@ -12,12 +12,18 @@ import (
 )
 
 type Route struct {
-	Name       string
-	Method     string
-	Path       string
-	Collection bool
-	Custom     bool
-	Versions   map[int]*RouteVersion
+	Name            string
+	Method          string
+	Path            string
+	Collection      bool
+	Custom          bool
+	Versions        map[int]*RouteVersion
+	PluginPipelines []*PluginPipeline
+}
+
+type PluginPipeline struct {
+	Name     string
+	Argument map[string]interface{}
 }
 
 type RouteVersion struct {

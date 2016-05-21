@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/BurntSushi/toml"
@@ -112,8 +113,12 @@ func ParseApiSettings(api *Api, line []byte) (bool, error) {
 }
 
 func ParseRoute(line []byte) (*Route, error) {
-	route := &Route{Versions: make(map[int]*RouteVersion)}
-	chunks := bytes.Split(line, []byte(","))
+	route := &Route{
+		Versions:        make(map[int]*RouteVersion),
+		PluginPipelines: make([]*PluginPipeline, 0),
+	}
+	pipelines := bytes.Split(line, []byte("|"))
+	chunks := bytes.Split(pipelines[0], []byte(","))
 	urlParams := bytes.Split(chunks[0], []byte(" "))
 	route.Method = strings.ToUpper(string(urlParams[0]))
 	route.Path = string(urlParams[1])
@@ -139,9 +144,38 @@ func ParseRoute(line []byte) (*Route, error) {
 			}
 		}
 	}
+	if len(pipelines) > 0 {
+		for i := 1; i < len(pipelines); i++ {
+			pipeline := pipelines[i]
+			pluginPipeline, err := ParsePluginPipeline(pipeline)
+			if err != nil {
+				return nil, err
+			}
+			route.PluginPipelines = append(route.PluginPipelines, pluginPipeline)
+		}
+	}
 	return route, nil
 }
 
+func ParsePluginPipeline(content []byte) (*PluginPipeline, error) {
+	content = bytes.TrimSpace(content)
+	chunks := bytes.Split(content, []byte(" "))
+	if len(chunks) == 0 {
+		return nil, errors.New("Plugin name not supplied in pipeline")
+	}
+	pp := &PluginPipeline{Name: string(chunks[0])}
+	if len(chunks) == 1 {
+		return pp, nil
+	}
+	jsonContent := bytes.Join(chunks[1:], []byte(" "))
+	arg := make(map[string]interface{})
+	err := json.Unmarshal(jsonContent, &arg)
+	if err != nil {
+		return nil, err
+	}
+	pp.Argument = arg
+	return pp, nil
+}
 func ParseSchema(path string, route *Route) error {
 	files, err := filepath.Glob(path + "/schemas/" + route.Name + ".v[0-9]*.schema")
 	if err != nil {

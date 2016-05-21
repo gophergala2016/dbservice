@@ -43,3 +43,20 @@ func TestParseRoutes(t *testing.T) {
 		t.Errorf("Expected to get create_user route v4 schema, but got nil")
 	}
 }
+
+func TestParseRoute(t *testing.T) {
+	routeLine := "post /login, name: 'login' | jwt {\"success\": true}"
+	route, err := ParseRoute([]byte(routeLine))
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if len(route.PluginPipelines) != 1 {
+		t.Errorf("Expected to parse 1 plugin pipeline, but got: %v", len(route.PluginPipelines))
+	}
+	if route.PluginPipelines[0].Name != "jwt" {
+		t.Errorf("Expected plugin name to be 'jwt', but got: '%v'", route.PluginPipelines[0].Name)
+	}
+	if route.PluginPipelines[0].Argument["success"] == nil {
+		t.Errorf("Expected plugin argument to have success key, but got none")
+	}
+}
