@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gophergala2016/dbserver/plugins/jwt"
 	"github.com/julienschmidt/httprouter"
@@ -98,19 +99,22 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 		if api.IsDeprecated(apiVersion) {
 			w.Header().Set("X-Api-Deprecated", "true")
 		}
-		for rows.Next() {
+		if rows.Next() {
 			err := rows.Scan(&jsonValue)
 			if err != nil {
 				if route.Collection {
-					fmt.Fprint(w, "[]")
+					jsonValue = "[]"
 				} else {
 					w.WriteHeader(http.StatusNotFound)
 				}
 				return
 			}
+		}
+		if len(route.PluginPipelines) > 0 {
+			goThroughPipelines(api, jsonValue, route.PluginPipelines, w)
+		} else {
 			fmt.Fprint(w, jsonValue)
 		}
-
 	}
 }
 
@@ -169,4 +173,39 @@ func main() {
 		port = os.Args[1]
 	}
 	log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+func goThroughPipelines(api *Api,
+	jsonValue string,
+	pluginPipelines []*PluginPipeline,
+	w http.ResponseWriter) error {
+
+	data := make(map[string]interface{})
+	err := json.Unmarshal([]byte(jsonValue), &data)
+	if err != nil {
+		return err
+	}
+	for _, pp := range pluginPipelines {
+		plugin := api.GetPlugin(pp.Name)
+		if plugin == nil {
+			return errors.New(fmt.Sprintf("Plugin missing: %v", pp.Name))
+		}
+		response := plugin.Process(data, pp.Argument)
+		if response.Headers != nil {
+			for name, values := range response.Headers {
+				for _, value := range values {
+					w.Header().Set(name, value)
+				}
+			}
+		}
+		if response.ResponseCode != 0 {
+			w.WriteHeader(response.ResponseCode)
+			if response.Error != "" {
+				fmt.Fprint(w, response.Error)
+			}
+			return nil
+		}
+		data = response.Data
+	}
+	return nil
 }

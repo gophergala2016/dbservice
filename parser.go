@@ -21,7 +21,10 @@ func ParseRoutes(path string) (*Api, error) {
 	if err != nil {
 		return nil, err
 	}
-	api := &Api{Routes: make([]*Route, 0, 0)}
+	api := &Api{
+		Routes:  make([]*Route, 0, 0),
+		Plugins: make(map[string]Plugin),
+	}
 	lines := bytes.Split(content, []byte("\n"))
 	for _, line := range lines {
 		line = bytes.TrimSpace(line)
