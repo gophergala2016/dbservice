@@ -44,5 +44,5 @@ func (self *Api) GetPlugins() []string {
 type Plugin interface {
 	ParseConfig(path string) error
 	Process(data map[string]interface{}, arg map[string]interface{}) *plugins.Response
-	ProcessBeforeHook(data map[string]interface{}, r *http.Request)
+	ProcessBeforeHook(data map[string]interface{}, r *http.Request) *plugins.Response
 }

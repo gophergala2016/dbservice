@@ -82,7 +82,7 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 		data := make(map[string]interface{})
 		data["params"] = params
 
-		runBeforeHooks(api, data, r)
+		runBeforeHooks(api, data, r, w)
 		sql, err := route.Sql(data, apiVersion)
 		if err != nil && sql != "" {
 			w.WriteHeader(http.StatusBadRequest)
@@ -218,10 +218,17 @@ func goThroughPipelines(api *Api,
 	return nil
 }
 
-func runBeforeHooks(api *Api, data map[string]interface{}, r *http.Request) {
+func runBeforeHooks(api *Api, data map[string]interface{}, r *http.Request, w http.ResponseWriter) {
 	plugins := api.GetPlugins()
 	for _, name := range plugins {
 		plugin := api.GetPlugin(name)
-		plugin.ProcessBeforeHook(data, r)
+		response := plugin.ProcessBeforeHook(data, r)
+		if response != nil && response.Headers != nil {
+			for name, values := range response.Headers {
+				for _, value := range values {
+					w.Header().Set(name, value)
+				}
+			}
+		}
 	}
 }

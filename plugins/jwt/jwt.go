@@ -68,14 +68,14 @@ func (self *JWT) Process(data map[string]interface{}, arg map[string]interface{}
 
 func (self *JWT) GenerateToken(payload map[string]interface{}) ([]byte, error) {
 	claims := jws.Claims{}
+	for key, value := range payload {
+		claims.Set(key, value)
+	}
 	if self.Issuer != "" {
 		claims.SetIssuer(self.Issuer)
 	}
 	if self.ExpirationTime.Duration > 0 {
 		claims.SetExpiration(time.Now().Add(self.ExpirationTime.Duration))
-	}
-	for key, value := range payload {
-		claims.Set(key, value)
 	}
 	token := jws.NewJWT(claims, crypto.SigningMethodHS256)
 	serializedToken, err := token.Serialize([]byte(self.Secret))
@@ -85,22 +85,43 @@ func (self *JWT) GenerateToken(payload map[string]interface{}) ([]byte, error) {
 	return serializedToken, nil
 }
 
-func (self *JWT) ProcessBeforeHook(data map[string]interface{}, r *http.Request) {
+func (self *JWT) ProcessBeforeHook(data map[string]interface{}, r *http.Request) *plugins.Response {
 	headerValue := r.Header.Get("Authorization")
 	if headerValue == "" {
-		return
+		return nil
 	}
 	if !strings.HasPrefix(headerValue, "Bearer ") {
-		return
+		return nil
 	}
 	headerValue = strings.Replace(headerValue, "Bearer ", "", 1)
 	token, err := jws.ParseJWT([]byte(headerValue))
 	if err != nil {
-		return
+		return nil
 	}
 	err = token.Validate([]byte(self.Secret), crypto.SigningMethodHS256)
 	if err != nil {
-		return
+		return nil
+	}
+	expiration, ok := token.Claims().Expiration()
+	if !ok {
+		return nil
+	}
+	if expiration.Unix() < time.Now().Unix() {
+		return nil
+	}
+	if time.Now().Add(self.RotationDeadline.Duration).Unix() > expiration.Unix() {
+		token, err := self.GenerateToken(token.Claims())
+		response := &plugins.Response{}
+		if err != nil {
+			response.ResponseCode = 500
+			response.Error = err.Error()
+			return response
+		}
+		if len(token) > 0 {
+			response.Headers = make(map[string][]string)
+			response.Headers["Authorization"] = []string{"Bearer " + string(token)}
+		}
 	}
 	data["jwt"] = token.Claims()
+	return nil
 }
