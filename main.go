@@ -75,7 +75,15 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 			urlParams[urlParam.Key] = urlParam.Value
 		}
 		params, err := getRequestParams(r, urlParams)
-		sql, err := route.Sql(params, apiVersion)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		data := make(map[string]interface{})
+		data["params"] = params
+
+		runBeforeHooks(api, data, r)
+		sql, err := route.Sql(data, apiVersion)
 		if err != nil && sql != "" {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, sql)
@@ -208,4 +216,12 @@ func goThroughPipelines(api *Api,
 		data = response.Data
 	}
 	return nil
+}
+
+func runBeforeHooks(api *Api, data map[string]interface{}, r *http.Request) {
+	plugins := api.GetPlugins()
+	for _, name := range plugins {
+		plugin := api.GetPlugin(name)
+		plugin.ProcessBeforeHook(data, r)
+	}
 }

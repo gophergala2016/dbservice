@@ -32,7 +32,7 @@ type RouteVersion struct {
 	SqlTemplate *template.Template
 }
 
-func (self *Route) validate(params map[string]interface{}, version int) (string, error) {
+func (self *Route) validate(params interface{}, version int) (string, error) {
 	route := self.Versions[version]
 	if route == nil {
 		return "", fmt.Errorf("Route version %v missing from %v route", version, self.Name)
@@ -59,14 +59,14 @@ func (self *Route) validate(params map[string]interface{}, version int) (string,
 	return "", nil
 }
 
-func (self *Route) Sql(params map[string]interface{}, version int) (string, error) {
+func (self *Route) Sql(data map[string]interface{}, version int) (string, error) {
 	version = self.GetAvailableVersion(version)
 	route := self.Versions[version]
 	if route == nil {
 		return "", fmt.Errorf("Route version %v missing from %v route", version, self.Name)
 	}
 	var out bytes.Buffer
-	response, err := self.validate(params, version)
+	response, err := self.validate(data["params"], version)
 	if err != nil {
 		return "", err
 	}
@@ -76,7 +76,7 @@ func (self *Route) Sql(params map[string]interface{}, version int) (string, erro
 	if !self.Custom {
 		out.Write([]byte("with response_table as ("))
 	}
-	err = route.SqlTemplate.Execute(&out, params)
+	err = route.SqlTemplate.Execute(&out, data)
 	if err != nil {
 		return "", err
 	}
@@ -124,5 +124,4 @@ func makeTemplate(t string) (*template.Template, error) {
 		"quote": quoteString,
 	}
 	return template.New("").Funcs(funcMap).Parse(t)
-
 }

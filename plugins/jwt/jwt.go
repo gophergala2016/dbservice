@@ -8,6 +8,8 @@ import (
 	"github.com/SermoDigital/jose/jws"
 	"github.com/gophergala2016/dbserver/plugins"
 	"io/ioutil"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -83,7 +85,19 @@ func (self *JWT) GenerateToken(payload map[string]interface{}) ([]byte, error) {
 	return serializedToken, nil
 }
 
-// app.Register(&JWT{}, "jwt") || app.Register("jwt", JWT)
-
-// Hooks: 1. Before request
-//        2. Process - when called in pipeline
+func (self *JWT) ProcessBeforeHook(data map[string]interface{}, r *http.Request) {
+	headerValue := r.Header.Get("Authorization")
+	if headerValue == "" {
+		return
+	}
+	if !strings.HasPrefix(headerValue, "Bearer ") {
+		return
+	}
+	headerValue = strings.Replace(headerValue, "Bearer ", "", 1)
+	//TODO: Verify secret
+	token, err := jws.ParseJWT([]byte(headerValue))
+	if err != nil {
+		return
+	}
+	data["jwt"] = token.Claims()
+}
