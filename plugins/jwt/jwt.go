@@ -94,8 +94,11 @@ func (self *JWT) ProcessBeforeHook(data map[string]interface{}, r *http.Request)
 		return
 	}
 	headerValue = strings.Replace(headerValue, "Bearer ", "", 1)
-	//TODO: Verify secret
 	token, err := jws.ParseJWT([]byte(headerValue))
+	if err != nil {
+		return
+	}
+	err = token.Validate([]byte(self.Secret), crypto.SigningMethodHS256)
 	if err != nil {
 		return
 	}
