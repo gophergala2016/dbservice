@@ -1,0 +1,4 @@
+secret = "secret"
+issuer = "issuer"
+expiration = "4h"
+rotation_deadline = "2h"

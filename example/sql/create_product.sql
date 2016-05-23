@@ -1,1 +1,1 @@
-insert into products (name, price{{if .status}}, status{{end}}) values ({{.name | quote}}, {{.price}}{{if .status}}, {{.status | quote }}{{end}}) returning *
+insert into products (name, price{{if .params.status}}, status{{end}}) values ({{.params.name | quote}}, {{.params.price}}{{if .params.status}}, {{.params.status | quote }}{{end}}) returning *

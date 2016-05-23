@@ -12,6 +12,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[string]interface{}, error) {
@@ -94,12 +95,15 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 			log.Println(err)
 			return
 		}
-		log.Println(sql)
+		start := time.Now()
 		rows, err := db.Query(sql)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			log.Println(sql)
 			log.Println(err)
 			return
+		} else {
+			log.Printf(sql+" took %s\n", time.Since(start))
 		}
 		defer rows.Close()
 		var jsonValue string

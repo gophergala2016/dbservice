@@ -1,1 +1,1 @@
-select * from products where id={{.id}}
+select * from products where id={{.params.id}}

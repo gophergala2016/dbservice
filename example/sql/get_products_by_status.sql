@@ -1,1 +1,1 @@
-select * from products where status={{.status | quote}}
+select * from products where status={{.params.status | quote}}

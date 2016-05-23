@@ -30,25 +30,25 @@ Sql generation
 After request parameters are validated, they are used in sql template to generate sql request. Template should be in `sql/<route_name>.sql` file. Example of sql template:
 
 ```
-select * from products where id={{.id}}
+select * from products where id={{.params.id}}
 ```
 
 In this example id is expected to be integer (make sure that that's the case using schema validation). If you want to insert string into sql statement, it has to be quoted:
 
 ```
-select * from products where status={{.status | quote}}
+select * from products where status={{.params.status | quote}}
 ```
 
 If you are performing insert/update/delete operation, don't forget `returning` statement to get response data. Example:
 
 ```
-insert into products (name, price) values ({{.name | quote}}, {{.price}}) returning *
+insert into products (name, price) values ({{.params.name | quote}}, {{.params.price}}) returning *
 ```
 
 or
 
 ```
-insert into products (name, price) values ({{.name | quote}}, {{.price}}) returning true as success
+insert into products (name, price) values ({{.params.name | quote}}, {{.params.price}}) returning true as success
 ```
 
 Sql generation is quite powerful and you can use all the power of `text/template` package.
@@ -177,7 +177,7 @@ Reading payload
 If jwt plugin is enabled, you can use content from jwt payload in sql templates by using following syntax:
 
 ```
-{{jwt.payload["<key name>"]}}
+{{.jwt.<key name>}}
 ```
 
 This will insert value from the payload into sql query.
