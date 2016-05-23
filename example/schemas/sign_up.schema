@@ -1,0 +1,23 @@
+{
+  "title": "User signup",
+  "description": "User signup",
+  "type": "object",
+  "properties": {
+    "email": {
+      "description": "User email",
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "description": "User name",
+      "type": "string",
+      "minLength": 1
+    },    
+    "password": {
+      "description": "User password",
+      "type": "string",
+      "minLength": 1
+    }    
+  },
+  "required": ["email", "name", "password"]
+}

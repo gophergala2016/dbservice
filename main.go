@@ -219,6 +219,11 @@ func goThroughPipelines(api *Api,
 		}
 		data = response.Data
 	}
+	dataJson, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	fmt.Fprint(w, string(dataJson))
 	return nil
 }
 

@@ -27,11 +27,20 @@ psql -U postgres
 create database dbservice_example;
 \c dbservice_example
 
+CREATE EXTENSION pgcrypto;
+
 create table products(
   id serial,
   name text not null,
   price integer not null,
   status text
+);
+
+create table users(
+  id serial,
+  name text not null,
+  email text not null,
+  password text not null
 );
 ```
 Try different requests

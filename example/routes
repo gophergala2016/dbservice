@@ -5,3 +5,5 @@ post /products, name: 'create_product'
 put /products/:id, name: 'update_product'
 
 post /login, name: 'login' | jwt
+post /sign_up, name: 'sign_up'
+get /current_user, name: 'current_user'
