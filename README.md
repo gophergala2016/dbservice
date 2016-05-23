@@ -181,3 +181,5 @@ If jwt plugin is enabled, you can use content from jwt payload in sql templates 
 ```
 
 This will insert value from the payload into sql query.
+
+TODO: Email, browser detection and serving html plugins, ability to validate and upload files
