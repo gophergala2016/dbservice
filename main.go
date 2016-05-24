@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"io/ioutil"
 )
 
 func getRequestParams(r *http.Request, urlParams map[string]interface{}) (map[string]interface{}, error) {
@@ -130,6 +131,20 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 	}
 }
 
+var indexHtml []byte
+
+func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if len(indexHtml) == 0 {
+		content, err := ioutil.ReadFile("index.html")
+		if err != nil {
+			indexHtml = []byte(err.Error())
+		} else {
+			indexHtml = content
+		}
+	}
+	w.Write(indexHtml)
+}
+
 var db *sql.DB
 
 func main() {
@@ -146,6 +161,9 @@ func main() {
 	}
 	defer db.Close()
 	router := httprouter.New()
+	if _, err := os.Stat("./index.html"); err == nil {
+		router.GET("/", Index)
+	}
 	for _, route := range api.Routes {
 		if route.Method == "GET" {
 			router.GET(route.Path, handler(api, route, 0))
@@ -183,6 +201,9 @@ func main() {
 	port := "8080"
 	if len(os.Args) > 1 {
 		port = os.Args[1]
+	}
+	if _, err := os.Stat("./static"); err == nil {
+		router.ServeFiles("/static/*filepath", http.Dir("static"))
 	}
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
