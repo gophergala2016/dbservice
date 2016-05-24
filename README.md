@@ -182,4 +182,14 @@ If jwt plugin is enabled, you can use content from jwt payload in sql templates 
 
 This will insert value from the payload into sql query.
 
-TODO: Email, browser detection and serving html plugins, ability to validate and upload files
+TODO:
+- Email sending plugin
+- Browser detection plugin
+- Serving static html plugin (likely should include A/B testing ability)
+- Validation of files and files upload to s3
+- Delayed jobs
+- Testing endpoints
+- Automatic reation of documentation (possibly client libraries in future)
+- Code generators
+- Ability to hold migration files and run migrations up/down
+- Plugin for region (country) detection (possibly setting up redirect or serve different content)
