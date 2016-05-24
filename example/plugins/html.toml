@@ -1,0 +1,7 @@
+[default]
+  template="home"
+[products]
+  template="products"
+  paths=["get_products", "sign_up"]
+
+# Add A/B testing
