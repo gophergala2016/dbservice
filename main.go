@@ -119,8 +119,8 @@ func handler(api *Api, route *Route, version int) func(http.ResponseWriter, *htt
 					jsonValue = "[]"
 				} else {
 					w.WriteHeader(http.StatusNotFound)
+					return
 				}
-				return
 			}
 		}
 		if len(route.PluginPipelines) > 0 {
